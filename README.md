@@ -5,7 +5,7 @@ The official PHP library for using [the Realo REST API](https://api.realo.com/do
 Before using this library, you must have a valid API Key. To get an API Key, please contact your Realo customer success manager.
 
 ## Installation
-The recommended way to install the Realo PHP API client is through (composer)[https://getcomposer.org].
+The recommended way to install the Realo PHP API client is through [composer](https://getcomposer.org).
 See [here](https://getcomposer.org/download/) how to install it.
 
 Next, run the `composer` command to install the Realo PHP API client:
