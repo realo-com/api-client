@@ -56,10 +56,8 @@ class RealoApi
 	{
 		$client = new Client([
 			'base_uri' => self::API_BASE_URI,
-			'defaults' => [
-				'headers' => [
-					'User-Agent' => self::DEFAULT_USER_AGENT
-				]
+			'headers' => [
+				'User-Agent' => self::DEFAULT_USER_AGENT
 			]
 		]);
 
