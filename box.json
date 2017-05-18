@@ -1,0 +1,13 @@
+{
+    "directories": [
+        "src"
+    ],
+    "finder": [
+        {
+            "name": "*.php",
+            "in": "vendor"
+        }
+    ],
+    "output": "realo-api-client.phar",
+    "stub": true
+}
