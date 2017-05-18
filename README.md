@@ -1,6 +1,6 @@
 # Realo API PHP Library
 
-The official PHP library for using [the Realo REST API](https://api.realo.com/docs/).
+The official PHP library for using [the Realo REST API](https://api.realo.com/docs).
 
 Before using this library, you must have a valid API Key. To get an API Key, please contact your Realo customer success manager.
 
