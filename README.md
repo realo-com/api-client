@@ -5,8 +5,10 @@ The official PHP library for using [the Realo REST API](https://api.realo.com/do
 Before using this library, you must have a valid API Key. To get an API Key, please contact your Realo customer success manager.
 
 ## Installation
-The recommended way to install the Realo PHP API client is through [composer](https://getcomposer.org).
-See [here](https://getcomposer.org/download/) how to install it.
+
+### As a composer dependency (Recommended)
+
+The recommended way to install the Realo PHP API client is through [composer](https://getcomposer.org/download/).
 
 Next, run the `composer` command to install the Realo PHP API client:
 
@@ -17,9 +19,17 @@ composer require realo/api-client
 After installing, you need to require Composer's autoloader:
 
 ```php
-require __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
+```
 
-use Realo\Api\RealoApi;
+### As a Phar
+
+You may download a ready-to-use version of the Realo API client library as a Phar from our [releases](https://github.com/realo-com/api-client/releases). This includes the API client and all its dependencies.
+
+After downloading, you need to require the bundled autoloader:
+
+```php
+require_once 'phar://' . __DIR__ . '/realo-api-client.phar/vendor/autoload.php';
 ```
 
 ## Initialization
@@ -62,9 +72,6 @@ use Realo\Api\RealoApi;
 ### Send An API Call Using The Request Function
 We provide a base request function to access any of our API resources.
 ```php
-<?php
-require __DIR__ . '/vendor/autoload.php';
-
 use Realo\Api\RealoApi;
 use Realo\Api\RealoApiException;
 
@@ -75,7 +82,6 @@ try {
 } catch (RealoApiException $e) {
     printf("Error %d: %s\n", $e->getCode(), $e->getMessage());
 }
-?>
 ```
 
 ## Exceptions
