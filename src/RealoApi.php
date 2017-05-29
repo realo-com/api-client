@@ -107,7 +107,7 @@ class RealoApi
 	 * @param string $method
 	 * @param array|null $payload
 	 * @param array $headers
-	 * @return array
+	 * @return mixed
 	 * @throws RealoApiException
 	 */
 	public function request($path, $method = 'GET', array $payload = null, array $headers = [])
