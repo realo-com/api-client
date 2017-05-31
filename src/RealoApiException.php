@@ -26,7 +26,7 @@ class RealoApiException extends \RuntimeException
 		$this->errors = null;
 		$this->type = null;
 
-		if ($response) {
+		if ($response && preg_match('|^application/json|', $response->getHeader('Content-Type')[0])) {
 			$body = json_decode((string) $response->getBody(), true);
 			if (isset($body['errors'])) {
 				$this->errors = $body['errors'];
