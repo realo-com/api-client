@@ -69,8 +69,34 @@ require_once 'phar://' . __DIR__ . '/realo-api-client.phar/vendor/autoload.php';
 
 ## Examples
 
+### Use The Bundled CLI Tool
+We provide a simple CLI utility which you can use to interact with our API.
+
+```bash
+$ php example/simple-cli.php --public-key=xxx --private-key=xxx /valuations/xxx/data/mobility
+{
+    "data": {
+        "mobilityScore": 0.88,
+        "distanceToCityCenter": 3130,
+        "distanceToBusStop": 323,
+        "distanceToTrainStation": 1197,
+        "distanceToSchool": 77,
+        "distanceToStores": 33,
+        "distanceToHighways": 3282,
+        "buildingDensity": 1688.01,
+        "inhabitantsDensity": 32346.18,
+        "transitTypeCityCenter": "cycling-distance",
+        "transitTypeBusStop": "walking-distance",
+        "transitTypeTrainStation": "walking-distance",
+        "transitTypeSchool": "walking-distance",
+        "transitTypeStores": "walking-distance"
+    }
+}
+```
+
 ### Send An API Call Using The Request Function
 We provide a base request function to access any of our API resources.
+
 ```php
 use Realo\Api\RealoApi;
 use Realo\Api\RealoApiException;
