@@ -33,13 +33,16 @@ require_once 'phar://' . __DIR__ . '/realo-api-client.phar/vendor/autoload.php';
 ```
 
 ## Initialization
-#### RealoApi::create(publicKey, privateKey)
+#### RealoApi::create(publicKey, privateKey, environment)
 * `publicKey`
     * Type: `string`
     * API public key
 * `privateKey`
     * Type: `string`
     * API private key
+* `environment`
+    * Type: `string`
+    * API environment (either `production` or `sandbox`)
 
 #### RealoApi::createWithClient(publicKey, privateKey, client)
 * `publicKey`

@@ -25,10 +25,10 @@ function pretty_print($data)
 function print_usage()
 {
 	global $argv;
-	fprintf(STDERR, "Usage: %s [-m|--http-method=...] [-b|--http-body=...] [-f|--force] <--public-key=...> <--private-key=...> <PATH>\n", $argv[0]);
+	fprintf(STDERR, "Usage: %s [-m|--http-method=...] [-b|--http-body=...] [-f|--force] [-e|--environment=production|sandbox] <--public-key=...> <--private-key=...> <PATH>\n", $argv[0]);
 }
 
-$options = getopt('m::b::f', ['public-key:', 'private-key:', 'http-method::', '--http-body::', '--force']);
+$options = getopt('m:b:fe:', ['public-key:', 'private-key:', 'http-method:', 'http-body:', 'force', 'environment:']);
 if ($options === false) {
 	print_usage();
 	exit(1);
@@ -40,6 +40,7 @@ $httpMethod = 'GET';
 $httpPath = $argv[$argc - 1];
 $httpBody = null;
 $forcePrint = false;
+$environment = RealoApi::PRODUCTION_ENVIRONMENT;
 foreach ($options as $k => $v) {
 	switch ($k) {
 		case 'public-key':
@@ -60,6 +61,10 @@ foreach ($options as $k => $v) {
 		case 'force':
 			$forcePrint = true;
 			break;
+		case 'e':
+		case 'environment':
+			$environment = $v;
+			break;
 	}
 }
 
@@ -68,7 +73,7 @@ if ($publicKey === null || $privateKey === null || $httpPath === null) {
 	exit(1);
 }
 
-$api = RealoApi::create($options['public-key'], $options['private-key']);
+$api = RealoApi::create($options['public-key'], $options['private-key'], $environment);
 try {
 	$response = $api->request($httpPath, $httpMethod, $httpBody);
 	pretty_print($response);

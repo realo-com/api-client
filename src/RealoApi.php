@@ -11,7 +11,14 @@ use function GuzzleHttp\json_decode, GuzzleHttp\json_encode;
 class RealoApi
 {
 	const DEFAULT_USER_AGENT = 'RealoApiClient/1.0';
-	const API_BASE_URI = 'https://api.realo.com/1.0/';
+
+	const PRODUCTION_ENVIRONMENT = 'production';
+	const SANDBOX_ENVIRONMENT = 'sandbox';
+
+	private static $ENVIRONMENT_TO_URL_MAPPING = [
+		self::PRODUCTION_ENVIRONMENT => 'https://api.realo.com/1.0/',
+		self::SANDBOX_ENVIRONMENT => 'https://api-sandbox.realo.com/1.0/',
+	];
 
 	/**
 	 * The public key used to identify the API consumer.
@@ -50,12 +57,17 @@ class RealoApi
 	/**
 	 * @param string $publicKey
 	 * @param string $privateKey
+	 * @param string $environment
 	 * @return RealoApi
 	 */
-	public static function create($publicKey, $privateKey)
+	public static function create($publicKey, $privateKey, $environment = self::PRODUCTION_ENVIRONMENT)
 	{
+		if (!isset(self::$ENVIRONMENT_TO_URL_MAPPING[$environment])) {
+			throw new \InvalidArgumentException("Unsupported environment '$environment', please use any of [" . implode(", ", array_keys(self::$ENVIRONMENT_TO_URL_MAPPING)) . "]");
+		}
+
 		$client = new Client([
-			'base_uri' => self::API_BASE_URI,
+			'base_uri' => self::$ENVIRONMENT_TO_URL_MAPPING[$environment],
 			'headers' => [
 				'User-Agent' => self::DEFAULT_USER_AGENT
 			]
