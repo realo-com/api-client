@@ -55,7 +55,10 @@ foreach ($options as $k => $v) {
 			break;
 		case 'b':
 		case 'http-body':
-			$httpBody = $v;
+			$httpBody = json_decode($v, true);
+			if (json_last_error() !== JSON_ERROR_NONE) {
+				throw new InvalidArgumentException("Invalid JSON body given: " . json_last_error_msg());
+			}
 			break;
 		case 'f':
 		case 'force':
