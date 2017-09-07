@@ -10,7 +10,7 @@ use function GuzzleHttp\json_decode, GuzzleHttp\json_encode;
 
 class RealoApi
 {
-	const DEFAULT_USER_AGENT = 'RealoApiClient/1.0';
+	const DEFAULT_USER_AGENT = 'RealoApiClient/1.0.2';
 
 	const PRODUCTION_ENVIRONMENT = 'production';
 	const SANDBOX_ENVIRONMENT = 'sandbox';
