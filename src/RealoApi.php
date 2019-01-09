@@ -94,11 +94,26 @@ class RealoApi
 	protected function signRequest(RequestInterface $request)
 	{
 		// Sign the request and add authorization header.
-		$baseString = strtoupper($request->getMethod()) . '&';
-		$baseString .= (string) $request->getUri() . '&';
-		$baseString .= (string) $request->getBody();
+		$header = $this->getSigningHeaders($request->getUri(), $request->getMethod(), $request->getBody());
+		foreach ($header as $key => $value) {
+			return $request->withAddedHeader($key, $value);
+		}
+	}
+
+	/**
+	 * @param $path
+	 * @param $method
+	 * @param null $payload
+	 * @return array
+	 */
+	protected function getSigningHeaders($path, $method, $payload = null)
+	{
+		// Sign the request and add authorization header.
+		$baseString = strtoupper($method) . '&';
+		$baseString .= (string) $path . '&';
+		$baseString .= (string) $payload;
 		$signature = base64_encode(hash_hmac('sha256', $baseString, $this->privateKey, true));
-		return $request->withAddedHeader('Authorization', 'Realo key="' . $this->publicKey . '", version="1.0", signature="' . $signature . '"');
+		return ['Authorization' =>  'Realo key="' . $this->publicKey . '", version="1.0", signature="' . $signature . '"'];
 	}
 
 	/**
@@ -119,10 +134,9 @@ class RealoApi
 	 * @param string $method
 	 * @param array|null $payload
 	 * @param array $headers
-	 * @return mixed
-	 * @throws RealoApiException
+	 * @return Request
 	 */
-	public function request($path, $method = 'GET', array $payload = null, array $headers = [])
+	public function buildRequest($path, $method = 'GET', array $payload = null, array $headers = [])
 	{
 		// Create request
 		$headers['Content-Type'] = 'application/json';
@@ -136,6 +150,21 @@ class RealoApi
 		// Sign the request and add authorization header.
 		$request = $this->signRequest($request);
 
+		return $request;
+	}
+
+	/**
+	 * @param string $path
+	 * @param string $method
+	 * @param array|null $payload
+	 * @param array $headers
+	 * @return mixed
+	 * @throws RealoApiException
+	 */
+	public function request($path, $method = 'GET', array $payload = null, array $headers = [])
+	{
+		$request = $this->buildRequest($path, $method, $payload, $headers);
+
 		try {
 			// Send the request to the API.
 			$response = $this->client->send($request);
@@ -144,5 +173,146 @@ class RealoApi
 		}
 
 		return $this->decodeResponse($response);
+	}
+
+//	/**
+//	 * @param Request[] $requests
+//	 * @return mixed[]
+//	 * @throws RealoApiException
+//	 */
+//	public function doMultipleRequests(array $requests)
+//	{
+//		try {
+//			$responses = $this->client->send($requests);
+//		} catch (RequestException $e) {
+//			throw new RealoApiException($e);
+//		}
+//
+//		return array_map([$this, 'decodeResponse'], $responses);
+//	}
+
+	/**
+	 * @param array $requests ['path', 'method', 'params', 'headers']
+	 * @return array [http_code, body]
+	 */
+	public function multiRequest($requests)
+	{
+		//Using Guzzle is disabled because of version conflict
+//		$guzzleRequests = [];
+//		foreach ($requests as $request) {
+//			$guzzleRequest = $this->buildRequest($request['path'], $request['method'], isset($request['params']) ? $request['params'] : null, isset($request['headers']) ? $request['headers'] : []);
+//			$guzzleRequests[] = $guzzleRequest;
+//		}
+//
+//		return $this->doMultipleRequests($guzzleRequests);
+
+		//Use curl instead
+		$arrCurls = [];
+		$resMultiCurl = curl_multi_init();
+		$arrReturn = [];
+		foreach ($requests as $requestKey => $request) {
+			$resCurl = $this->buildCurlRequest(
+				$request['path'],
+				$request['method'],
+				isset($request['params']) ? $request['params'] : null, isset($request['headers']) ? $request['headers'] : []
+			);
+
+			$arrCurls[$requestKey] = $resCurl;
+			curl_multi_add_handle($resMultiCurl, $resCurl);
+		}
+		$intActive = null;
+
+		do {
+			$intMultiCurlStatus = curl_multi_exec($resMultiCurl, $intActive);
+		} while ($intMultiCurlStatus === CURLM_CALL_MULTI_PERFORM);
+
+		do {
+			curl_multi_exec($resMultiCurl, $intActive);
+			curl_multi_select($resMultiCurl);
+		} while ($intActive && $intMultiCurlStatus === CURLM_OK);
+
+		foreach($arrCurls as $requestKey => $resCurl) {
+			$http_code = curl_getinfo($resCurl, CURLINFO_HTTP_CODE);
+			$arrReturn[$requestKey] = [$http_code, $this->decodeCurlResponse(curl_multi_getcontent($resCurl))];
+		}
+
+		return $arrReturn;
+	}
+
+	/**
+	 * @param $path
+	 * @param string $method
+	 * @param array|null $payload
+	 * @param array $headers
+	 * @return resource
+	 */
+	protected function buildCurlRequest($path, $method = 'GET', array $payload = null, array $headers = [])
+	{
+		// Create request
+		$headers['Content-Type'] = 'application/json';
+		$payload = $payload ? http_build_query($payload) : null;
+
+		$path = $this->client->getConfig('base_uri') . ltrim($path, '/');
+
+		// Sign the request and add authorization header.
+		$headers += $this->getSigningHeaders($path, $method,$payload);
+
+		$resCurl = curl_init();
+
+		if ($method === 'POST') {
+			curl_setopt($resCurl, CURLOPT_POST, 1);
+			curl_setopt($resCurl, CURLOPT_POSTFIELDS, $payload);
+		}
+
+		curl_setopt_array(
+			$resCurl,
+			array(
+				CURLOPT_URL => $path,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_HEADER => true,
+				CURLOPT_FOLLOWLOCATION => true,
+			)
+		);
+
+		$headerStrings = [];
+		foreach ($headers as $headerKey => $headerValue) {
+			$headerStrings[] = $headerKey.': '.$headerValue;
+		}
+		if (!empty($headerStrings)) {
+			curl_setopt($resCurl, CURLOPT_HTTPHEADER, $headerStrings);
+		}
+
+		return $resCurl;
+	}
+
+	/**
+	 * @param string $result
+	 * @return mixed|string
+	 */
+	protected function decodeCurlResponse($result)
+	{
+		list($header_text, $body) = explode("\r\n\r\n", $result, 2);
+
+		$headers = [];
+		foreach (explode("\r\n", $header_text) as $i => $line) {
+			if ($i === 0) {
+				$headers['http_code'] = $line;
+			}
+			else {
+				list ($key, $value) = explode(': ', $line);
+
+				if (stripos($value, ';') !== false) {
+					$value = explode(';', $value);
+				}
+
+				$headers[$key] = $value;
+			}
+		}
+
+		if (preg_match('|^application/json|', $headers['Content-Type'][0])) {
+			return json_decode((string) $body, true);
+		} else {
+			return (string) $body;
+		}
 	}
 }
