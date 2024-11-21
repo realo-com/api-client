@@ -1,20 +1,14 @@
 <?php
 namespace Realo\Api;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use function GuzzleHttp\json_decode, GuzzleHttp\json_encode;
 
 class RealoApi
 {
 	const DEFAULT_USER_AGENT = 'RealoApiClient/1.0.3';
-
 	const PRODUCTION_ENVIRONMENT = 'production';
 	const SANDBOX_ENVIRONMENT = 'sandbox';
-
 	private static $ENVIRONMENT_TO_URL_MAPPING = [
 		self::PRODUCTION_ENVIRONMENT => 'https://api.realo.com/1.0/',
 		self::SANDBOX_ENVIRONMENT => 'https://api-sandbox.realo.com/1.0/',
@@ -197,15 +191,6 @@ class RealoApi
 	 */
 	public function multiRequest($requests)
 	{
-		//Using Guzzle is disabled because of version conflict
-//		$guzzleRequests = [];
-//		foreach ($requests as $request) {
-//			$guzzleRequest = $this->buildRequest($request['path'], $request['method'], isset($request['params']) ? $request['params'] : null, isset($request['headers']) ? $request['headers'] : []);
-//			$guzzleRequests[] = $guzzleRequest;
-//		}
-//
-//		return $this->doMultipleRequests($guzzleRequests);
-
 		//Use curl instead
 		$arrCurls = [];
 		$resMultiCurl = curl_multi_init();
