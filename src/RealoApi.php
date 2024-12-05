@@ -3,7 +3,7 @@ namespace Realo\Api;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-
+use GuzzleHttp\Client;
 class RealoApi
 {
 	const DEFAULT_USER_AGENT = 'RealoApiClient/1.0.3';
