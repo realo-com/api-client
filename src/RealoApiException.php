@@ -1,8 +1,9 @@
 <?php
+
 namespace Realo\Api;
 
 use GuzzleHttp\Exception\RequestException;
-use function GuzzleHttp\json_decode;
+use GuzzleHttp\Utils;
 
 class RealoApiException extends \RuntimeException
 {
@@ -27,7 +28,7 @@ class RealoApiException extends \RuntimeException
 		$this->type = null;
 
 		if ($response && preg_match('|^application/json|', $response->getHeader('Content-Type')[0])) {
-			$body = json_decode((string) $response->getBody(), true);
+			$body = Utils::jsonDecode((string) $response->getBody(), true);
 			if (isset($body['errors'])) {
 				$this->errors = $body['errors'];
 			}
