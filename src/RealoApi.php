@@ -11,7 +11,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class RealoApi
 {
-	public const DEFAULT_USER_AGENT = 'RealoApiClient/1.0.3';
+	public const DEFAULT_USER_AGENT = 'RealoApiClient/1.0.4';
 
 	public const PRODUCTION_ENVIRONMENT = 'production';
 	public const SANDBOX_ENVIRONMENT = 'sandbox';
